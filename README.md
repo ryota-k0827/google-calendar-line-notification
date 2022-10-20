@@ -1,5 +1,6 @@
 # google-calendar-line-notification
-Googleカレンダーの変更をLINEに通知するGASアプリ
+Googleカレンダーの変更をLINEに通知するGASアプリ  
+カレンダーを複数人で共有している時に便利です
 
 ## 使用サービス・ライブラリ
 - LINE Notify
