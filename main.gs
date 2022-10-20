@@ -47,9 +47,9 @@ function calendarUpdated(event) {
     } catch (e) {
         console.error(e);
 
-        // エラー情報をSlackへ通知する
-        const error = 'カレンダー変更イベントの処理中にエラーが発生しました。\n\n calendarId=' + calendarId + '\nerror=' + e.message;
-        notifySlack(error);
+        // エラー情報をLINEへ通知する
+        const error = '\nカレンダー変更イベントの処理中にエラーが発生しました。\n\nError: ' + e.message;
+        notifyLINE(error);
     }
     console.timeEnd('----- calendarUpdated -----');
 }
@@ -112,19 +112,19 @@ function generateMessage(events) {
 
         if (status == 'cancelled') { // 予定が削除された場合
             if (storedEvent) { // 予定の全件リストにIDが一致する予定が存在した場合
-                messages.push('Googleカレンダーの予定が削除されました。\n\nタイトル：' + storedEvent.summary + '\n開始：' + dateToString(storedEvent.start) + '\n終了：' + dateToString(storedEvent.end));
+                messages.push('\nGoogleカレンダーの予定が削除されました。\n\nタイトル：' + storedEvent.summary + '\n開始：' + dateToString(storedEvent.start) + '\n終了：' + dateToString(storedEvent.end));
             } else { // 予定の全件リストにIDが一致する予定が存在しない場合
-                messages.push('Googleカレンダーの予定が削除されました。');
+                messages.push('\nGoogleカレンダーの予定が削除されました。');
             }
         } else { // 予定が登録or更新された場合
             if (storedEvent) { // 予定が更新された場合
-                messages.push('Googleカレンダーの予定が更新されました。\n\nタイトル：' + storedEvent.summary + '\n開始：' + dateToString(storedEvent.start) + '\n終了：' + dateToString(storedEvent.end));
+                messages.push('\nGoogleカレンダーの予定が更新されました。\n\nタイトル：' + storedEvent.summary + '\n開始：' + dateToString(storedEvent.start) + '\n終了：' + dateToString(storedEvent.end));
             } else { // 予定が登録された場合
                 // 予定のdateもしくはdateTimeから予定の開始日時／終了日時を取得する
                 const start = (events[i].start.dateTime) ? events[i].start.dateTime : events[i].start.date;
                 const end = (events[i].end.dateTime) ? events[i].end.dateTime : events[i].end.date;
 
-                messages.push('Googleカレンダーに予定が登録されました。\n\nタイトル：' + events[i].summary + '\n開始：' + dateToString(start) + '\n終了：' + dateToString(end));
+                messages.push('\nGoogleカレンダーに予定が登録されました。\n\nタイトル：' + events[i].summary + '\n開始：' + dateToString(start) + '\n終了：' + dateToString(end));
             }
         }
     }
@@ -250,25 +250,6 @@ function refleshStoredEvents(calendarId) {
     SpreadsheetApp.openById(FILE_ID_EVENTS).getSheetByName('DATA').getDataRange().setNumberFormat('@');
 
     console.timeEnd('----- refleshStoredEvents -----');
-}
-
-/**
- * Slack通知関数
- *
- * @param message 通知メッセージ
- */
-function notifySlack(message) {
-    console.time('----- notifySlack -----');
-
-    // SlackのAPIを呼び出し、通知を行なう
-    const options = {
-        method: 'post',
-        payload: JSON.stringify({ 'text': message }),
-        muteHttpExceptions: true
-    };
-    UrlFetchApp.fetch(properties.getProperty(PROPERTY_KEY_ENDPOINT_SLACK_WEBHOOK), options);
-
-    console.timeEnd('----- notifySlack -----');
 }
 
 /**
