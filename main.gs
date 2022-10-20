@@ -117,13 +117,12 @@ function generateMessage(events) {
                 messages.push('\nGoogleカレンダーの予定が削除されました。');
             }
         } else { // 予定が登録or更新された場合
+            // 予定のdateもしくはdateTimeから予定の開始日時／終了日時を取得する
+            const start = (events[i].start.dateTime) ? events[i].start.dateTime : events[i].start.date;
+            const end = (events[i].end.dateTime) ? events[i].end.dateTime : events[i].end.date;
             if (storedEvent) { // 予定が更新された場合
-                messages.push('\nGoogleカレンダーの予定が更新されました。\n\nタイトル：' + storedEvent.summary + '\n開始：' + dateToString(storedEvent.start) + '\n終了：' + dateToString(storedEvent.end));
+                messages.push('\nGoogleカレンダーの予定が更新されました。\n\nタイトル：' + events[i].summary + '\n開始：' + dateToString(start) + '\n終了：' + dateToString(end));
             } else { // 予定が登録された場合
-                // 予定のdateもしくはdateTimeから予定の開始日時／終了日時を取得する
-                const start = (events[i].start.dateTime) ? events[i].start.dateTime : events[i].start.date;
-                const end = (events[i].end.dateTime) ? events[i].end.dateTime : events[i].end.date;
-
                 messages.push('\nGoogleカレンダーに予定が登録されました。\n\nタイトル：' + events[i].summary + '\n開始：' + dateToString(start) + '\n終了：' + dateToString(end));
             }
         }
