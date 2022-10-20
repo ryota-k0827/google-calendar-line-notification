@@ -1,6 +1,6 @@
 // ScriptPropertiesのキー定数
 const PROPERTY_KEY_SYNC_TOKEN = 'SYNC_TOKEN';
-const PROPERTY_KEY_LINE_TOKEN = 'LINE_NOTIFY_ACCESS_TOKEN';
+const PROPERTY_KEY_LINE_TOKEN = 'LINE_NOTIFY_ACCESS_TOKEN_TEST';
 const PROPERTY_KEY_ENDPOINT_SLACK_WEBHOOK = 'ENDPOINT_SLACK_WEBHOOK';
 
 // LINE Notify APIエンドポイント定数
@@ -110,9 +110,21 @@ function generateMessage(events) {
         // ファイルに保存した予定の全件リストをIDで検索する
         const storedEvent = searchStoredEventById(events[i].id);
 
+        let commonMsg = '';
+
         if (status == 'cancelled') { // 予定が削除された場合
             if (storedEvent) { // 予定の全件リストにIDが一致する予定が存在した場合
-                messages.push('\nGoogleカレンダーの予定が削除されました。\n\nタイトル：' + storedEvent.summary + '\n開始：' + dateToString(storedEvent.start) + '\n終了：' + dateToString(storedEvent.end));
+                const strStart = dateToString(storedEvent.start);
+                const strEnd = dateToString(storedEvent.end);
+                if (strStart.split(' ')[1]) {
+                    commonMsg = (`\n\nタイトル：${storedEvent.summary}\n開始：${strStart}\n終了：${strEnd}`);
+                } else {
+                    commonMsg = (`\n\nタイトル：${storedEvent.summary}\n開始：${strStart} 終日`);
+                    if (strStart !== strEnd) {
+                        commonMsg += `\n終了：${strEnd} 終日`;
+                    }
+                }
+                messages.push(`\nGoogleカレンダーの予定が削除されました。${commonMsg}`);
             } else { // 予定の全件リストにIDが一致する予定が存在しない場合
                 messages.push('\nGoogleカレンダーの予定が削除されました。');
             }
@@ -120,10 +132,20 @@ function generateMessage(events) {
             // 予定のdateもしくはdateTimeから予定の開始日時／終了日時を取得する
             const start = (events[i].start.dateTime) ? events[i].start.dateTime : events[i].start.date;
             const end = (events[i].end.dateTime) ? events[i].end.dateTime : events[i].end.date;
+            const strStart = dateToString(start);
+            const strEnd = dateToString(end);
+            if (strStart.split(' ')[1]) {
+                commonMsg = `\n\nタイトル：${events[i].summary}\n開始：${strStart}\n終了：${strEnd}`;
+            } else {
+                commonMsg = `\n\nタイトル：${events[i].summary}\n開始：${strStart} 終日`;
+                if (strStart !== strEnd) {
+                    commonMsg += `\n終了：${strEnd} 終日`;
+                }
+            }
             if (storedEvent) { // 予定が更新された場合
-                messages.push('\nGoogleカレンダーの予定が更新されました。\n\nタイトル：' + events[i].summary + '\n開始：' + dateToString(start) + '\n終了：' + dateToString(end));
+                messages.push(`\nGoogleカレンダーの予定が更新されました。${commonMsg}`);
             } else { // 予定が登録された場合
-                messages.push('\nGoogleカレンダーに予定が登録されました。\n\nタイトル：' + events[i].summary + '\n開始：' + dateToString(start) + '\n終了：' + dateToString(end));
+                messages.push(`\nGoogleカレンダーに予定が登録されました。${commonMsg}`);
             }
         }
     }
@@ -178,21 +200,25 @@ function searchStoredEvents(filter) {
 function dateToString(source) {
     console.time('----- dateToString -----');
 
+    const strSource = String(source);
     let stringFormat = '';
-    const yyyyMMdd = String(source).split('T')[0];
-    const hhmm = String(source).split('T')[1];
-    const yyyy = String(yyyyMMdd).split('-')[0];
-    const MM = String(yyyyMMdd).split('-')[1];
-    const dd = String(yyyyMMdd).split('-')[2];
-
-    // 終日予定の場合、時分は未定義となる。その場合は「00:00」とする
-    const hh = (hhmm) ? String(hhmm).split(':')[0] : '00';
-    const mm = (hhmm) ? String(hhmm).split(':')[1] : '00';
-
-    stringFormat = yyyy + '-' + MM + '-' + dd + ' ' + hh + ':' + mm;
+    const hhmm = strSource.split('T')[1];
+    // 時刻が存在する場合のみ変換処理を行う
+    if (hhmm) {
+        const yyyyMMdd = strSource.split('T')[0];
+        const yyyy = String(yyyyMMdd).split('-')[0];
+        const MM = String(yyyyMMdd).split('-')[1];
+        const dd = String(yyyyMMdd).split('-')[2];
+        const hh = String(hhmm).split(':')[0];
+        const mm = String(hhmm).split(':')[1];
+        stringFormat = yyyy + '-' + MM + '-' + dd + ' ' + hh + ':' + mm;
+    } else {
+        // 引数をそのまま代入する
+        stringFormat = source;
+    }
 
     console.timeEnd('----- dateToString -----');
-    return stringFormat;
+    return stringFormat;    
 }
 
 /**
