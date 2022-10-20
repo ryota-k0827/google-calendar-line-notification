@@ -117,11 +117,12 @@ function generateMessage(events) {
                 const strStart = dateToString(storedEvent.start);
                 const strEnd = dateToString(storedEvent.end);
                 if (strStart.split(' ')[1]) {
-                    commonMsg = (`\n\nタイトル：${storedEvent.summary}\n開始：${strStart}\n終了：${strEnd}`);
+                    commonMsg = (`\n\n${storedEvent.summary}\n${strStart}~\n${strEnd}`);
                 } else {
-                    commonMsg = (`\n\nタイトル：${storedEvent.summary}\n開始：${strStart} 終日`);
-                    if (strStart !== strEnd) {
-                        commonMsg += `\n終了：${strEnd} 終日`;
+                    commonMsg = (`\n\n${storedEvent.summary}\n${strStart} 終日`);
+                    const strEndComp = dateComparison(strStart, strEnd);
+                    if (strEndComp) {
+                        commonMsg += `~\n${strEndComp} 終日`;
                     }
                 }
                 messages.push(`\nGoogleカレンダーの予定が削除されました。${commonMsg}`);
@@ -135,11 +136,12 @@ function generateMessage(events) {
             const strStart = dateToString(start);
             const strEnd = dateToString(end);
             if (strStart.split(' ')[1]) {
-                commonMsg = `\n\nタイトル：${events[i].summary}\n開始：${strStart}\n終了：${strEnd}`;
+                commonMsg = `\n\n${events[i].summary}\n${strStart}~\n${strEnd}`;
             } else {
-                commonMsg = `\n\nタイトル：${events[i].summary}\n開始：${strStart} 終日`;
-                if (strStart !== strEnd) {
-                    commonMsg += `\n終了：${strEnd} 終日`;
+                commonMsg = `\n\n${events[i].summary}\n${strStart} 終日`;
+                const strEndComp = dateComparison(strStart, strEnd);
+                if (strEndComp) {
+                    commonMsg += `~\n${strEndComp} 終日`;
                 }
             }
             if (storedEvent) { // 予定が更新された場合
@@ -219,6 +221,38 @@ function dateToString(source) {
 
     console.timeEnd('----- dateToString -----');
     return stringFormat;    
+}
+
+/**
+ * 日付比較関数
+ * 
+ * @param start 開始日
+ * @param end 終了日
+ */
+function dateComparison(start='2022-12-31', end='2023-01-01') {
+    console.time('----- dateComparison -----');
+
+    let result = '';
+
+    const dtStart = new Date(start);
+    const dtEnd = new Date(end);
+
+    // 終了日を1日巻き戻す
+    dtEnd.setDate(dtEnd.getDate() - 1);
+
+    const dtStartYear = dtStart.getFullYear();
+    const dtStartMonth = dtStart.getMonth() + 1;
+    const dtStartDay = dtStart.getDate();
+    const dtEndYear = dtEnd.getFullYear();
+    const dtEndMonth = dtEnd.getMonth() + 1;
+    const dtEndDay = dtEnd.getDate();
+
+    if (dtStartYear !== dtEndYear || dtStartMonth !== dtEndMonth || dtStartDay !== dtEndDay) {
+        result = `${dtEndYear}-${dtEndMonth.toString().padStart(2, '0')}-${dtEndDay.toString().padStart(2, '0')}`;
+    }
+
+    console.time('----- dateComparison -----');
+    return result;
 }
 
 /**
