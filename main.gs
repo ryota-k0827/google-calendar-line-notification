@@ -251,7 +251,7 @@ function dateComparison(start='2022-12-31', end='2023-01-01') {
         result = `${dtEndYear}-${dtEndMonth.toString().padStart(2, '0')}-${dtEndDay.toString().padStart(2, '0')}`;
     }
 
-    console.time('----- dateComparison -----');
+    console.timeEnd('----- dateComparison -----');
     return result;
 }
 
