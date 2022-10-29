@@ -1,7 +1,6 @@
 // ScriptPropertiesのキー定数
 const PROPERTY_KEY_SYNC_TOKEN = 'SYNC_TOKEN';
 const PROPERTY_KEY_LINE_TOKEN = 'LINE_NOTIFY_ACCESS_TOKEN';
-const PROPERTY_KEY_ENDPOINT_SLACK_WEBHOOK = 'ENDPOINT_SLACK_WEBHOOK';
 
 // LINE Notify APIエンドポイント定数
 const ENDPOINT_LINE_NOTIFY_API = 'https://notify-api.line.me/api/notify';
